@@ -22,10 +22,12 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { index as productsIndex } from '@/routes/products';
-import { type BreadcrumbItem } from '@/types';
-import { Form, Head, router } from '@inertiajs/react';
+import { PageProps, type BreadcrumbItem } from '@/types';
+import { Form, Head, router, usePage } from '@inertiajs/react';
 import { Eye, PackagePlus, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 type SupplierOption = {
     id: string;
@@ -106,7 +108,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const priceFormatter = new Intl.NumberFormat(undefined, {
     style: 'currency',
-    currency: 'USD',
+    currency: 'IDR',
 });
 
 export default function ProductsPage({ products, suppliers, filters }: ProductsPageProps) {
@@ -117,6 +119,7 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
     >(null);
     const [viewProduct, setViewProduct] = useState<Product | null>(null);
     const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+    const {flash} = usePage<PageProps>().props;
 
     const initialSearch = filters.search ?? '';
     const productRows = products?.data ?? [];
@@ -154,6 +157,12 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+    }, [flash?.success]);
 
     const hasSuppliers = suppliers.length > 0;
 
@@ -325,6 +334,8 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                         </span>
                     </div>
                 )}
+
+                {flash.success && <Toaster position='top-right' />}
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Input

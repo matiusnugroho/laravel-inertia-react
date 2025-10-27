@@ -41,3 +41,12 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface FlashMessages {
+    success?: string;
+    error?: string;
+}
+
+export interface PageProps extends SharedData {
+    flash: FlashMessages;
+}
