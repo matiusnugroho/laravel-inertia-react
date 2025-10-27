@@ -45,6 +45,9 @@ export interface User {
 export interface FlashMessages {
     success?: string;
     error?: string;
+    warning?: string;
+    info?: string;
+    [key: string]: unknown;
 }
 
 export interface PageProps extends SharedData {

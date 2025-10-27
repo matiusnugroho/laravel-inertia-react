@@ -26,8 +26,6 @@ import { PageProps, type BreadcrumbItem } from '@/types';
 import { Form, Head, router, usePage } from '@inertiajs/react';
 import { Eye, PackagePlus, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Toaster } from '@/components/ui/sonner';
-import { toast } from 'sonner';
 
 type SupplierOption = {
     id: string;
@@ -157,12 +155,6 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
             }
         };
     }, []);
-
-    useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        }
-    }, [flash?.success]);
 
     const hasSuppliers = suppliers.length > 0;
 
@@ -334,8 +326,6 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                         </span>
                     </div>
                 )}
-
-                {flash.success && <Toaster position='top-right' />}
 
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <Input
