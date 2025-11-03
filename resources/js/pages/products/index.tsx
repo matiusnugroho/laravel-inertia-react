@@ -1,7 +1,9 @@
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import InputError from '@/components/input-error';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { CategorySelector } from '@/components/products/category-selector';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -36,6 +38,11 @@ type SupplierOption = {
     image_url?: string | null;
 };
 
+type CategoryOption = {
+    id: string;
+    name: string;
+};
+
 type Product = {
     id: string;
     name: string;
@@ -45,6 +52,7 @@ type Product = {
     stock: number;
     image_url?: string | null;
     supplier: SupplierOption | null;
+    categories: CategoryOption[];
 };
 
 type PaginationMeta = {
@@ -84,6 +92,7 @@ type ProductsPageFilters = {
 type ProductsPageProps = {
     products: Paginated<Product>;
     suppliers: SupplierOption[];
+    categories: CategoryOption[];
     filters: ProductsPageFilters;
 };
 
@@ -109,7 +118,7 @@ const priceFormatter = new Intl.NumberFormat(undefined, {
     currency: 'IDR',
 });
 
-export default function ProductsPage({ products, suppliers, filters }: ProductsPageProps) {
+export default function ProductsPage({ products, suppliers, categories, filters }: ProductsPageProps) {
     const [dialogState, setDialogState] = useState<
         | { mode: 'create' }
         | { mode: 'edit'; product: Product }
@@ -296,13 +305,13 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Products" />
+            <Head title="Produk" />
 
             <div className="flex flex-1 flex-col gap-6 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 className="text-xl font-semibold text-foreground">
-                            Product catalog
+                            Product catalog cikontot
                         </h1>
                         <p className="text-sm text-muted-foreground">
                             Track your inventory and supplier assignments.
@@ -359,10 +368,11 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                 </div>
 
                 <div className="overflow-hidden rounded-lg border border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
-                    <table className="min-w-full divide-y divide-border text-left text-sm">
-                        <thead className="bg-muted/60">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold text-muted-foreground">
+                    <div className="w-full overflow-x-auto">
+                        <table className="w-full min-w-[720px] divide-y divide-border text-left text-sm">
+                            <thead className="bg-muted/60">
+                                <tr>
+                                    <th className="px-4 py-3 font-semibold text-muted-foreground">
                                     Photo
                                 </th>
                                 <th className="px-4 py-3 font-semibold text-muted-foreground">
@@ -384,7 +394,7 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                                     Actions
                                 </th>
                             </tr>
-                        </thead>
+                            </thead>
                         <tbody className="divide-y divide-border/70 bg-background">
                             {!hasProducts ? (
                                 <tr>
@@ -422,6 +432,19 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                                                 <p className="text-xs text-muted-foreground">
                                                     {product.description}
                                                 </p>
+                                            )}
+                                            {product.categories.length > 0 && (
+                                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                                    {product.categories.map((category) => (
+                                                        <Badge
+                                                            key={category.id}
+                                                            variant="outline"
+                                                            className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide"
+                                                        >
+                                                            {category.name}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
                                             )}
                                         </td>
                                         <td className="px-4 py-3 align-top text-sm text-muted-foreground">
@@ -492,7 +515,8 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                                 ))
                             )}
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
 
                     <div className="flex flex-col gap-3 border-t border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -559,7 +583,7 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                             key={dialogKey}
                             {...formConfig}
                             encType="multipart/form-data"
-                            className="space-y-4"
+                            className="flex max-h-[calc(100dvh-10rem)] flex-col gap-4 sm:max-h-[calc(100vh-10rem)]"
                             onSuccess={closeDialog}
                         >
                             {({
@@ -568,146 +592,168 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                                 resetAndClearErrors,
                             }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="name">Product name</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.product.name
-                                                    : ''
-                                            }
-                                            placeholder="Wireless headphones"
-                                            required
-                                        />
-                                        <InputError message={errors.name} />
-                                    </div>
+                                    <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Product name</Label>
+                                            <Input
+                                                id="name"
+                                                name="name"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product.name
+                                                        : ''
+                                                }
+                                                placeholder="Wireless headphones"
+                                                required
+                                            />
+                                            <InputError message={errors.name} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="sku">SKU</Label>
-                                        <Input
-                                            id="sku"
-                                            name="sku"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.product.sku
-                                                    : ''
-                                            }
-                                            placeholder="SKU-001"
-                                            required
-                                        />
-                                        <InputError message={errors.sku} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="sku">SKU</Label>
+                                            <Input
+                                                id="sku"
+                                                name="sku"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product.sku
+                                                        : ''
+                                                }
+                                                placeholder="SKU-001"
+                                                required
+                                            />
+                                            <InputError message={errors.sku} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="supplier_id">Supplier</Label>
-                                        <select
-                                            id="supplier_id"
-                                            name="supplier_id"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.product
-                                                          .supplier?.id ?? ''
-                                                    : ''
-                                            }
-                                            required
-                                            className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                                        >
-                                            <option value="" disabled>
-                                                Select supplier
-                                            </option>
-                                            {suppliers.map((supplier) => (
-                                                <option
-                                                    key={supplier.id}
-                                                    value={supplier.id}
-                                                >
-                                                    {supplier.name}
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="supplier_id">Supplier</Label>
+                                            <select
+                                                id="supplier_id"
+                                                name="supplier_id"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product
+                                                              .supplier?.id ?? ''
+                                                        : ''
+                                                }
+                                                required
+                                                className="h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                            >
+                                                <option value="" disabled>
+                                                    Select supplier
                                                 </option>
-                                            ))}
-                                        </select>
-                                        <InputError message={errors.supplier_id} />
-                                    </div>
+                                                {suppliers.map((supplier) => (
+                                                    <option
+                                                        key={supplier.id}
+                                                        value={supplier.id}
+                                                    >
+                                                        {supplier.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <InputError message={errors.supplier_id} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="image">Product photo</Label>
-                                        <Input
-                                            id="image"
-                                            name="image"
-                                            type="file"
-                                            accept="image/*"
-                                        />
-                                        <p className="text-xs text-muted-foreground">
-                                            Images are automatically converted to WebP format.
-                                        </p>
-                                        <InputError message={errors.image} />
-                                        {dialogState?.mode === 'edit' &&
-                                            dialogState.product.image_url && (
-                                                <div className="flex items-center gap-3 rounded-md border border-border/70 bg-muted/40 p-2">
-                                                    <img
-                                                        src={dialogState.product.image_url}
-                                                        alt={`${dialogState.product.name} current photo`}
-                                                        className="h-12 w-12 rounded-md object-cover"
-                                                    />
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Current photo
-                                                    </span>
-                                                </div>
-                                            )}
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="product-categories">Categories</Label>
+                                            <CategorySelector
+                                                key={`${dialogKey}-category-selector`}
+                                                options={categories}
+                                                initialSelected={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product.categories
+                                                        : []
+                                                }
+                                                inputId="product-categories"
+                                                error={
+                                                    errors.categories ??
+                                                    Object.entries(errors).find(([key]) =>
+                                                        key.startsWith('categories.'),
+                                                    )?.[1]
+                                                }
+                                            />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="price">Price</Label>
-                                        <Input
-                                            id="price"
-                                            name="price"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.product.price
-                                                    : ''
-                                            }
-                                            placeholder="99.00"
-                                            required
-                                        />
-                                        <InputError message={errors.price} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="image">Product photo</Label>
+                                            <Input
+                                                id="image"
+                                                name="image"
+                                                type="file"
+                                                accept="image/*"
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Images are automatically converted to WebP format.
+                                            </p>
+                                            <InputError message={errors.image} />
+                                            {dialogState?.mode === 'edit' &&
+                                                dialogState.product.image_url && (
+                                                    <div className="flex items-center gap-3 rounded-md border border-border/70 bg-muted/40 p-2">
+                                                        <img
+                                                            src={dialogState.product.image_url}
+                                                            alt={`${dialogState.product.name} current photo`}
+                                                            className="h-12 w-12 rounded-md object-cover"
+                                                        />
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Current photo
+                                                        </span>
+                                                    </div>
+                                                )}
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="stock">Stock</Label>
-                                        <Input
-                                            id="stock"
-                                            name="stock"
-                                            type="number"
-                                            min="0"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? String(dialogState.product.stock)
-                                                    : ''
-                                            }
-                                            placeholder="50"
-                                            required
-                                        />
-                                        <InputError message={errors.stock} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="price">Price</Label>
+                                            <Input
+                                                id="price"
+                                                name="price"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product.price
+                                                        : ''
+                                                }
+                                                placeholder="99.00"
+                                                required
+                                            />
+                                            <InputError message={errors.price} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="description">Description</Label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.product
-                                                          .description ?? ''
-                                                    : ''
-                                            }
-                                            placeholder="Short product description"
-                                            className="min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                                        />
-                                        <InputError message={errors.description} />
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="stock">Stock</Label>
+                                            <Input
+                                                id="stock"
+                                                name="stock"
+                                                type="number"
+                                                min="0"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? String(dialogState.product.stock)
+                                                        : ''
+                                                }
+                                                placeholder="50"
+                                                required
+                                            />
+                                            <InputError message={errors.stock} />
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="description">Description</Label>
+                                            <textarea
+                                                id="description"
+                                                name="description"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.product
+                                                              .description ?? ''
+                                                        : ''
+                                                }
+                                                placeholder="Short product description"
+                                                className="min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                            />
+                                            <InputError message={errors.description} />
+                                        </div>
                                     </div>
 
                                     <DialogFooter className="gap-2">
@@ -806,6 +852,28 @@ export default function ProductsPage({ products, suppliers, filters }: ProductsP
                                 {viewProduct.supplier?.contact_name && (
                                     <span className="text-muted-foreground">
                                         Contact: {viewProduct.supplier.contact_name}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="grid gap-1">
+                                <span className="text-xs uppercase text-muted-foreground">
+                                    Categories
+                                </span>
+                                {viewProduct.categories.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {viewProduct.categories.map((category) => (
+                                            <Badge
+                                                key={category.id}
+                                                variant="outline"
+                                                className="rounded-full px-2 py-1 text-[10px] uppercase tracking-wide"
+                                            >
+                                                {category.name}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span className="text-muted-foreground">
+                                        No categories assigned.
                                     </span>
                                 )}
                             </div>

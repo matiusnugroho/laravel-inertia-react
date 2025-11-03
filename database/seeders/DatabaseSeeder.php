@@ -13,8 +13,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            CategorySeeder::class,
             SupplierSeeder::class,
         ]);
+
+        User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin',
+                'password' => 'cikuntuy',
+                'email_verified_at' => now(),
+            ]
+        );
 
         User::firstOrCreate(
             ['email' => 'test@example.com'],

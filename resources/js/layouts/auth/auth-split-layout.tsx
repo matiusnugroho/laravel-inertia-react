@@ -1,4 +1,5 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import authBackground from '@/assets/login_bg.webp';
 import { home } from '@/routes';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -18,8 +19,14 @@ export default function AuthSplitLayout({
 
     return (
         <div className="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-                <div className="absolute inset-0 bg-zinc-900" />
+            <div
+                className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r"
+                style={{
+                    backgroundImage: `url(${authBackground})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
                 <Link
                     href={home()}
                     className="relative z-20 flex items-center text-lg font-medium"

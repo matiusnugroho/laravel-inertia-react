@@ -320,26 +320,27 @@ export default function SuppliersPage({ suppliers, filters }: SuppliersPageProps
                 </div>
 
                 <div className="overflow-hidden rounded-lg border border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
-                    <table className="min-w-full divide-y divide-border text-left text-sm">
-                        <thead className="bg-muted/60">
-                            <tr>
-                                <th className="px-4 py-3 font-semibold text-muted-foreground">
-                                    Photo
-                                </th>
-                                <th className="px-4 py-3 font-semibold text-muted-foreground">
-                                    Supplier
-                                </th>
-                                <th className="px-4 py-3 font-semibold text-muted-foreground">
-                                    Contact
-                                </th>
-                                <th className="px-4 py-3 font-semibold text-muted-foreground">
-                                    Products
-                                </th>
-                                <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
+                    <div className="w-full overflow-x-auto">
+                        <table className="w-full min-w-[640px] divide-y divide-border text-left text-sm">
+                            <thead className="bg-muted/60">
+                                <tr>
+                                    <th className="px-4 py-3 font-semibold text-muted-foreground">
+                                        Photo
+                                    </th>
+                                    <th className="px-4 py-3 font-semibold text-muted-foreground">
+                                        Supplier
+                                    </th>
+                                    <th className="px-4 py-3 font-semibold text-muted-foreground">
+                                        Contact
+                                    </th>
+                                    <th className="px-4 py-3 font-semibold text-muted-foreground">
+                                        Products
+                                    </th>
+                                    <th className="px-4 py-3 text-right font-semibold text-muted-foreground">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
                         <tbody className="divide-y divide-border/70 bg-background">
                             {!hasRows ? (
                                 <tr>
@@ -450,7 +451,8 @@ export default function SuppliersPage({ suppliers, filters }: SuppliersPageProps
                                 ))
                             )}
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
 
                     <div className="flex flex-col gap-3 border-t border-border/70 bg-muted/30 px-4 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -515,7 +517,7 @@ export default function SuppliersPage({ suppliers, filters }: SuppliersPageProps
                             key={dialogKey}
                             {...formConfig}
                             encType="multipart/form-data"
-                            className="space-y-4"
+                            className="flex max-h-[calc(100dvh-10rem)] flex-col gap-4 sm:max-h-[calc(100vh-10rem)]"
                             onSuccess={closeDialog}
                         >
                             {({
@@ -524,115 +526,117 @@ export default function SuppliersPage({ suppliers, filters }: SuppliersPageProps
                                 resetAndClearErrors,
                             }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="name">Supplier name</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            defaultValue={
+                                    <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Supplier name</Label>
+                                            <Input
+                                                id="name"
+                                                name="name"
+                                                defaultValue={
                                                 dialogState?.mode === 'edit'
                                                     ? dialogState.supplier.name
                                                     : ''
                                             }
-                                            placeholder="Acme Inc."
-                                            required
-                                        />
-                                        <InputError message={errors.name} />
-                                    </div>
+                                                placeholder="Acme Inc."
+                                                required
+                                            />
+                                            <InputError message={errors.name} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="contact_name">
-                                            Contact person
-                                        </Label>
-                                        <Input
-                                            id="contact_name"
-                                            name="contact_name"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.supplier
-                                                          .contact_name ?? ''
-                                                    : ''
-                                            }
-                                            placeholder="John Doe"
-                                        />
-                                        <InputError
-                                            message={errors.contact_name}
-                                        />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="contact_name">
+                                                Contact person
+                                            </Label>
+                                            <Input
+                                                id="contact_name"
+                                                name="contact_name"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.supplier
+                                                              .contact_name ?? ''
+                                                        : ''
+                                                }
+                                                placeholder="John Doe"
+                                            />
+                                            <InputError
+                                                message={errors.contact_name}
+                                            />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="email">Email address</Label>
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.supplier.email ?? ''
-                                                    : ''
-                                            }
-                                            placeholder="contact@example.com"
-                                        />
-                                        <InputError message={errors.email} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="email">Email address</Label>
+                                            <Input
+                                                id="email"
+                                                name="email"
+                                                type="email"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.supplier.email ?? ''
+                                                        : ''
+                                                }
+                                                placeholder="contact@example.com"
+                                            />
+                                            <InputError message={errors.email} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="phone">Phone</Label>
-                                        <Input
-                                            id="phone"
-                                            name="phone"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.supplier.phone ?? ''
-                                                    : ''
-                                            }
-                                            placeholder="(555) 123-4567"
-                                        />
-                                        <InputError message={errors.phone} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="phone">Phone</Label>
+                                            <Input
+                                                id="phone"
+                                                name="phone"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.supplier.phone ?? ''
+                                                        : ''
+                                                }
+                                                placeholder="(555) 123-4567"
+                                            />
+                                            <InputError message={errors.phone} />
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="image">Supplier photo</Label>
-                                        <Input
-                                            id="image"
-                                            name="image"
-                                            type="file"
-                                            accept="image/*"
-                                        />
-                                        <p className="text-xs text-muted-foreground">
-                                            Uploaded images are compressed to WebP automatically.
-                                        </p>
-                                        <InputError message={errors.image} />
-                                        {dialogState?.mode === 'edit' &&
-                                            dialogState.supplier.image_url && (
-                                                <div className="flex items-center gap-3 rounded-md border border-border/70 bg-muted/40 p-2">
-                                                    <img
-                                                        src={dialogState.supplier.image_url}
-                                                        alt={`${dialogState.supplier.name} current photo`}
-                                                        className="h-12 w-12 rounded-full object-cover"
-                                                    />
-                                                    <span className="text-xs text-muted-foreground">
-                                                        Current photo
-                                                    </span>
-                                                </div>
-                                            )}
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="image">Supplier photo</Label>
+                                            <Input
+                                                id="image"
+                                                name="image"
+                                                type="file"
+                                                accept="image/*"
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Uploaded images are compressed to WebP automatically.
+                                            </p>
+                                            <InputError message={errors.image} />
+                                            {dialogState?.mode === 'edit' &&
+                                                dialogState.supplier.image_url && (
+                                                    <div className="flex items-center gap-3 rounded-md border border-border/70 bg-muted/40 p-2">
+                                                        <img
+                                                            src={dialogState.supplier.image_url}
+                                                            alt={`${dialogState.supplier.name} current photo`}
+                                                            className="h-12 w-12 rounded-full object-cover"
+                                                        />
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Current photo
+                                                        </span>
+                                                    </div>
+                                                )}
+                                        </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="address">Address</Label>
-                                        <textarea
-                                            id="address"
-                                            name="address"
-                                            defaultValue={
-                                                dialogState?.mode === 'edit'
-                                                    ? dialogState.supplier
-                                                          .address ?? ''
-                                                    : ''
-                                            }
-                                            placeholder="123 Market Street, Springfield"
-                                            className="min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                                        />
-                                        <InputError message={errors.address} />
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="address">Address</Label>
+                                            <textarea
+                                                id="address"
+                                                name="address"
+                                                defaultValue={
+                                                    dialogState?.mode === 'edit'
+                                                        ? dialogState.supplier
+                                                              .address ?? ''
+                                                        : ''
+                                                }
+                                                placeholder="123 Market Street, Springfield"
+                                                className="min-h-[90px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                            />
+                                            <InputError message={errors.address} />
+                                        </div>
                                     </div>
 
                                     <DialogFooter className="gap-2">
