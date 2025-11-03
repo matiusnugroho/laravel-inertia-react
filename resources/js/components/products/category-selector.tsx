@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 type CategoryOption = {
     id: string;
@@ -22,8 +21,7 @@ type CategorySelectorProps = {
     error?: string;
 };
 
-const normalize = (value: string): string =>
-    value.trim().toLowerCase();
+const normalize = (value: string): string => value.trim().toLowerCase();
 
 export function CategorySelector({
     options,
@@ -40,64 +38,108 @@ export function CategorySelector({
             })),
     );
     const [inputValue, setInputValue] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
 
     const sortedOptions = useMemo(
         () => [...options].sort((a, b) => a.name.localeCompare(b.name)),
         [options],
     );
 
-    const isSelected = (name: string): boolean =>
-        selected.some((item) => normalize(item.name) === normalize(name));
+    const selectedKeySet = useMemo(
+        () =>
+            new Set(
+                selected.map((category) => normalize(category.name)),
+            ),
+        [selected],
+    );
 
-    const toggleExisting = (option: CategoryOption) => {
-        setSelected((current) => {
-            if (current.some((item) => normalize(item.name) === normalize(option.name))) {
-                return current.filter(
-                    (item) => normalize(item.name) !== normalize(option.name),
-                );
-            }
+    const availableOptions = useMemo(
+        () =>
+            sortedOptions.filter(
+                (option) => !selectedKeySet.has(normalize(option.name)),
+            ),
+        [sortedOptions, selectedKeySet],
+    );
 
-            return [
-                ...current,
-                {
-                    id: option.id,
-                    name: option.name,
-                },
-            ];
-        });
-    };
+    const filteredSuggestions = useMemo(() => {
+        const query = normalize(inputValue);
 
-    const addNewCategory = () => {
-        const trimmed = inputValue.trim();
+        if (!query) {
+            return availableOptions.slice(0, 8);
+        }
 
-        if (trimmed.length === 0) {
+        return availableOptions
+            .filter((option) => normalize(option.name).includes(query))
+            .slice(0, 8);
+    }, [availableOptions, inputValue]);
+
+    const addCategory = (name: string, id: string | null = null) => {
+        const safeName = name.replace(/\s+/g, ' ').trim();
+
+        if (safeName.length === 0) {
             return;
         }
 
-        if (isSelected(trimmed)) {
-            setInputValue('');
+        const key = normalize(safeName);
 
+        if (selectedKeySet.has(key)) {
+            setInputValue('');
             return;
         }
 
         setSelected((current) => [
             ...current,
             {
-                id: null,
-                name: trimmed.replace(/\s+/g, ' '),
+                id,
+                name: safeName,
             },
         ]);
         setInputValue('');
     };
 
+    const handleOptionSelect = (option: CategoryOption) => {
+        addCategory(option.name, option.id);
+    };
+
+    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (
+        event,
+    ) => {
+        if (event.key === 'Backspace' && inputValue === '' && selected.length) {
+            event.preventDefault();
+            setSelected((current) => current.slice(0, -1));
+            return;
+        }
+
+        if (event.key === 'Enter' || event.key === ',' || event.key === 'Tab') {
+            const trimmed = inputValue.trim();
+
+            if (trimmed !== '') {
+                event.preventDefault();
+
+                const existing = availableOptions.find(
+                    (option) => normalize(option.name) === normalize(trimmed),
+                );
+
+                if (existing) {
+                    handleOptionSelect(existing);
+                } else {
+                    addCategory(trimmed);
+                }
+            }
+        }
+    };
+
     const removeCategory = (name: string) => {
+        const key = normalize(name);
         setSelected((current) =>
-            current.filter((item) => normalize(item.name) !== normalize(name)),
+            current.filter(
+                (category) => normalize(category.name) !== key,
+            ),
         );
     };
 
     return (
-        <div className="grid gap-3">
+        <div className="grid gap-2">
             {selected.map((category, index) => (
                 <input
                     key={`${category.name}-${index}`}
@@ -107,13 +149,9 @@ export function CategorySelector({
                 />
             ))}
 
-            <div className="flex flex-wrap gap-2">
-                {selected.length === 0 ? (
-                    <span className="text-xs text-muted-foreground">
-                        No categories selected.
-                    </span>
-                ) : (
-                    selected.map((category, index) => (
+            <div className="min-h-10 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+                <div className="flex flex-wrap gap-2">
+                    {selected.map((category, index) => (
                         <Badge
                             key={`${category.name}-${index}-badge`}
                             variant="secondary"
@@ -129,58 +167,55 @@ export function CategorySelector({
                                 <X className="size-3.5" />
                             </button>
                         </Badge>
-                    ))
-                )}
-            </div>
+                    ))}
 
-            <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
                     <Input
                         id={inputId}
                         value={inputValue}
-                        onChange={(event) => setInputValue(event.target.value)}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                                event.preventDefault();
-                                addNewCategory();
-                            }
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => {
+                            // Delay blur to allow suggestion click
+                            setTimeout(() => setIsFocused(false), 100);
                         }}
-                        placeholder="Type a category and press Enter"
+                        onChange={(event) => setInputValue(event.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={
+                            selected.length === 0 ? 'Add categories…' : 'Add more…'
+                        }
+                        className="h-auto flex-1 border-0 bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
                     />
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addNewCategory}
-                        disabled={inputValue.trim().length === 0}
-                    >
-                        <Plus className="size-4" />
-                        Add
-                    </Button>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                    Select existing categories or add a new one.
-                </span>
-                {error ? (
-                    <span className="text-xs text-destructive">{error}</span>
-                ) : null}
             </div>
 
-            {sortedOptions.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                    {sortedOptions.map((option) => (
-                        <Button
-                            key={option.id}
-                            type="button"
-                            variant={isSelected(option.name) ? 'default' : 'outline'}
-                            className="h-8 rounded-full px-3 text-xs"
-                            onClick={() => toggleExisting(option)}
-                            aria-pressed={isSelected(option.name)}
-                        >
-                            {option.name}
-                        </Button>
-                    ))}
-                </div>
+            {error ? (
+                <span className="text-xs text-destructive">{error}</span>
             ) : null}
+
+            {isFocused && filteredSuggestions.length > 0 ? (
+                <ul className="max-h-48 overflow-y-auto rounded-md border border-border bg-popover text-sm shadow-md">
+                    {filteredSuggestions.map((option) => (
+                        <li key={option.id}>
+                            <button
+                                type="button"
+                                className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                onMouseDown={(event) => event.preventDefault()}
+                                onClick={() => handleOptionSelect(option)}
+                            >
+                                <span>{option.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                    press enter
+                                </span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
+
+            <p className="text-xs text-muted-foreground">
+                Tekan <kbd className="rounded bg-muted px-1">Enter</kbd> atau{' '}
+                <kbd className="rounded bg-muted px-1">,</kbd> untuk menambahkan
+                kategori baru. Gunakan Backspace untuk menghapus tag terakhir.
+            </p>
         </div>
     );
 }
